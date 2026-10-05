@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### provisioning ###
+provisioning/db/.env
+
+### environments ###
+.env.local

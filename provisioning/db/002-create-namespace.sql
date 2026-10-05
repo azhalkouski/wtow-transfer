@@ -1,0 +1,2 @@
+CREATE SCHEMA core AUTHORIZATION wtow_admin;
+GRANT USAGE ON SCHEMA core TO wtow_service;
