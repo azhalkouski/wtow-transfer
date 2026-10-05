@@ -1,3 +1,8 @@
 spring:
   application:
     name: wtow-transfer
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_SERVICE_USER}
+    password: ${POSTGRES_SERVICE_PASSWORD}
+  jpa.properties.hibernate.default_schema: core
