@@ -37,3 +37,6 @@ provisioning/db/.env
 
 ### environments ###
 .env.local
+
+
+notes/**
