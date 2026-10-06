@@ -1,6 +1,7 @@
 package com.example.wtow_transfer.service;
 
 import com.example.wtow_transfer.dto.AccountDto;
+import com.example.wtow_transfer.exception.AccountNotFoundException;
 import com.example.wtow_transfer.jpa.entity.Account;
 import com.example.wtow_transfer.jpa.repository.AccountsRepository;
 import com.example.wtow_transfer.mapper.AccountMapper;
@@ -27,10 +28,9 @@ public class AccountsService {
     }
 
     @Transactional(readOnly = true)
-    public AccountDto getAccountForUser(UUID userId, UUID accountId) throws Exception {
-        // RestControllerAdvice and custom exceptions will be provided in a followup PR
+    public AccountDto getAccountForUser(UUID userId, UUID accountId) {
         Account account = accountsRepository.findByIdAndUserId(accountId, userId)
-                .orElseThrow(() -> new Exception("Not found"));
+                .orElseThrow(() -> new AccountNotFoundException(userId, accountId));
         return AccountMapper.toDto(account);
     }
 }
