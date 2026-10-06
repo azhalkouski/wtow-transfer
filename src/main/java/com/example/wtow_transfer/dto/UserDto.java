@@ -3,7 +3,7 @@ package com.example.wtow_transfer.dto;
 import java.util.UUID;
 
 public record UserDto(
-        UUID userId,
+        UUID id,
         String citizenId,
         String firstName,
         String lastName,
