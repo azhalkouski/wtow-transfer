@@ -1,5 +1,3 @@
 spring:
   config:
     import: file:.env[.properties]
-  flyway:
-    enabled: false
