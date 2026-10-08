@@ -6,9 +6,14 @@ spring:
   application:
     name: wtow-transfer
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-    username: ${POSTGRES_SERVICE_USER}
-    password: ${POSTGRES_SERVICE_PASSWORD}
+    user-manager:
+      jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      username: ${POSTGRES_USER_MANAGER_USER}
+      password: ${POSTGRES_USER_MANAGER_PASSWORD}
+    account-manager:
+      jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      username: ${POSTGRES_ACCOUNT_MANAGER_USER}
+      password: ${POSTGRES_ACCOUNT_MANAGER_PASSWORD}
   jpa:
     open-in-view: false
     properties:
