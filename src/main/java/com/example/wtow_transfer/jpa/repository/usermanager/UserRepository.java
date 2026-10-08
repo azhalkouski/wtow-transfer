@@ -1,4 +1,4 @@
-package com.example.wtow_transfer.jpa.repository;
+package com.example.wtow_transfer.jpa.repository.usermanager;
 
 import com.example.wtow_transfer.jpa.entity.User;
 import org.springframework.data.repository.Repository;

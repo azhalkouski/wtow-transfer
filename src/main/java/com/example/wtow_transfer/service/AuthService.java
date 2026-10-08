@@ -3,13 +3,14 @@ package com.example.wtow_transfer.service;
 import com.example.wtow_transfer.dto.UserDto;
 import com.example.wtow_transfer.exception.AuthenticationException;
 import com.example.wtow_transfer.exception.NotAuthenticatedException;
-import com.example.wtow_transfer.jpa.repository.UserRepository;
+import com.example.wtow_transfer.jpa.repository.usermanager.UserRepository;
 import com.example.wtow_transfer.mapper.UserMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional("userManagerTransactionManager")
     public UserDto authenticate(String email, String password) {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPasswordHash()))
