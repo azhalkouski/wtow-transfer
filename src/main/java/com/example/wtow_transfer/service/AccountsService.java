@@ -1,5 +1,6 @@
 package com.example.wtow_transfer.service;
 
+import com.example.wtow_transfer.annotation.RlsProtected;
 import com.example.wtow_transfer.dto.AccountDto;
 import com.example.wtow_transfer.exception.AccountNotFoundException;
 import com.example.wtow_transfer.jpa.entity.Account;
@@ -20,6 +21,7 @@ public class AccountsService {
         this.accountsRepository = accountsRepository;
     }
 
+    @RlsProtected
     @Transactional(transactionManager="accountManagerTransactionManager", readOnly = true)
     public List<AccountDto> getAccountsForUser(UUID userId) {
         return accountsRepository.findAllByUserId(userId).stream()
@@ -27,6 +29,7 @@ public class AccountsService {
                 .toList();
     }
 
+    @RlsProtected
     @Transactional(transactionManager="accountManagerTransactionManager", readOnly = true)
     public AccountDto getAccountForUser(UUID userId, UUID accountId) {
         Account account = accountsRepository.findByIdAndUserId(accountId, userId)
