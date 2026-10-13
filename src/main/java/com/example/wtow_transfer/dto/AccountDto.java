@@ -7,5 +7,6 @@ public record AccountDto(
         UUID id,
         UUID userId,
         BigDecimal balance,
-        CurrencyDto currency
+        CurrencyDto currency,
+        String accNumber
 ) { }
