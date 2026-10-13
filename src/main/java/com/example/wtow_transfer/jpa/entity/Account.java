@@ -18,6 +18,7 @@ public class Account {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "currency_id")
     private CurrencyEntity currency;
+    private String accNumber;
 
     protected Account() {}
 
@@ -39,5 +40,9 @@ public class Account {
 
     public CurrencyEntity getCurrency() {
         return currency;
+    }
+
+    public String getAccNumber() {
+        return accNumber;
     }
 }
