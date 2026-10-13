@@ -2,6 +2,7 @@ package com.example.wtow_transfer.controller;
 
 import com.example.wtow_transfer.dto.LoginRequest;
 import com.example.wtow_transfer.service.AuthService;
+import com.example.wtow_transfer.service.SecurityContextService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -21,23 +22,25 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
+    private final SecurityContextService securityCtxService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, SecurityContextService securityCtxService) {
         this.authService = authService;
+        this.securityCtxService = securityCtxService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, UUID>> login(@Valid @RequestBody LoginRequest loginRequest,
                                          HttpSession httpSession) {
         UUID userId = authService.authenticate(loginRequest.email(), loginRequest.password());
-        SecurityContext securityContext = authService.createSecurityContext(userId);
+        SecurityContext securityContext = securityCtxService.createSecurityContext(userId);
         httpSession.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
         return ResponseEntity.ok().body(Map.of("userId", userId));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
-        authService.clearSecurityContext();
+        securityCtxService.clearSecurityContext();
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
