@@ -1,7 +1,6 @@
 package com.example.wtow_transfer.controller;
 
 import com.example.wtow_transfer.dto.LoginRequest;
-import com.example.wtow_transfer.dto.UserDto;
 import com.example.wtow_transfer.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -12,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+import java.util.UUID;
 
 
 @RestController
@@ -25,12 +27,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@Valid @RequestBody LoginRequest loginRequest,
+    public ResponseEntity<Map<String, UUID>> login(@Valid @RequestBody LoginRequest loginRequest,
                                          HttpSession httpSession) {
-        UserDto user = authService.authenticate(loginRequest.email(), loginRequest.password());
-        SecurityContext securityContext = authService.createSecurityContext(user.id());
+        UUID userId = authService.authenticate(loginRequest.email(), loginRequest.password());
+        SecurityContext securityContext = authService.createSecurityContext(userId);
         httpSession.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-        return ResponseEntity.ok().body(user);
+        return ResponseEntity.ok().body(Map.of("userId", userId));
     }
 
     @PostMapping("/logout")

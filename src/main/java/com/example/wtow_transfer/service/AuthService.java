@@ -1,10 +1,9 @@
 package com.example.wtow_transfer.service;
 
-import com.example.wtow_transfer.dto.UserDto;
 import com.example.wtow_transfer.exception.AuthenticationException;
 import com.example.wtow_transfer.exception.NotAuthenticatedException;
-import com.example.wtow_transfer.jpa.repository.usermanager.UserRepository;
-import com.example.wtow_transfer.mapper.UserMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,20 +17,28 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    @PersistenceContext(unitName = "userManager")
+    private EntityManager userManagerEntityManager;
+
+    public AuthService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional("userManagerTransactionManager")
-    public UserDto authenticate(String email, String password) {
-        return userRepository.findByEmail(email)
-                .filter(user -> passwordEncoder.matches(password, user.getPasswordHash()))
-                .map(UserMapper::toDto)
-                .orElseThrow(() -> new AuthenticationException(email));
+    public UUID authenticate(String email, String password) {
+        Object[] result = (Object[]) userManagerEntityManager.createNativeQuery(
+                    "SELECT id, password_hash FROM core.get_user_for_auth(:pEmail)"
+                )
+                .setParameter("pEmail", email)
+                .getSingleResultOrNull();
+
+        if (result == null || !passwordEncoder.matches(password, (String) result[1])) {
+            throw new AuthenticationException(email);
+        }
+
+        return (UUID) result[0];
     }
 
     public UUID getAuthenticatedUserId() {
