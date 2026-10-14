@@ -13,6 +13,6 @@ public class AccountMapper {
         CurrencyDto currencyDto = new CurrencyDto(currencyEntity.getId(), currencyEntity.getCode(),
                 currencyEntity.getDescription());
         return new AccountDto(e.getId(), e.getUserId(), e.getBalance(), currencyDto,
-                e.getAccNumber());
+                e.getAccNumber(), e.isActive());
     }
 }

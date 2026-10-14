@@ -8,5 +8,6 @@ public record AccountDto(
         UUID userId,
         BigDecimal balance,
         CurrencyDto currency,
-        String accNumber
+        String accNumber,
+        boolean isActive
 ) { }

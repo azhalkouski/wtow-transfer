@@ -19,6 +19,8 @@ public class Account {
     @JoinColumn(name = "currency_id")
     private CurrencyEntity currency;
     private String accNumber;
+    @Column(name = "is_active")
+    private boolean active;
 
     protected Account() {}
 
@@ -44,5 +46,9 @@ public class Account {
 
     public String getAccNumber() {
         return accNumber;
+    }
+
+    public Boolean isActive() {
+        return active;
     }
 }
