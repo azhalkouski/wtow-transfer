@@ -6,3 +6,4 @@ GRANT USAGE ON SCHEMA core TO wtow_service;
 GRANT USAGE ON SCHEMA core TO wtow_read;
 GRANT USAGE ON SCHEMA core TO wtow_user_mngr;
 GRANT USAGE ON SCHEMA core TO wtow_account_mngr;
+GRANT USAGE ON SCHEMA core TO wtow_transfer_ngn;
