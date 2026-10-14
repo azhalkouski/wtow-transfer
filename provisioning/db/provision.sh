@@ -10,6 +10,7 @@ fi
 : "${WTOW_READ_PW:?WTOW_READ_PW not set - create provisioning/database/.env from .env.example}"
 : "${WTOW_USER_MNGR_PW:?WTOW_USER_MNGR_PW not set - create provisioning/database/.env from .env.example}"
 : "${WTOW_ACCOUNT_MNGR_PW:?WTOW_ACCOUNT_MNGR_PW not set - create provisioning/database/.env from .env.example}"
+: "${WTOW_TRANSFER_NGN_PW?WTOW_TRANSFER_NGN_PW not set - create provisioning/database/.env from .env.example}"
 
 psql -v ON_ERROR_STOP=1 \
     -v wtow_admin_pw="$WTOW_ADMIN_PW" \
@@ -17,6 +18,7 @@ psql -v ON_ERROR_STOP=1 \
     -v wtow_read_pw="$WTOW_READ_PW" \
     -v wtow_user_mngr_ps="$WTOW_USER_MNGR_PW" \
     -v wtow_account_mngr_ps="$WTOW_ACCOUNT_MNGR_PW" \
+    -v wtow_transfer_ngn_ps="$WTOW_TRANSFER_NGN_PW" \
     -U postgres -d postgres -f "001-create-db-and-roles.sql"
 echo "001-create-db-and-roles.sql executed"
 
