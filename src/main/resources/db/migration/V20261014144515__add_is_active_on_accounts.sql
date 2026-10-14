@@ -1,0 +1,2 @@
+ALTER TABLE core.accounts
+ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
