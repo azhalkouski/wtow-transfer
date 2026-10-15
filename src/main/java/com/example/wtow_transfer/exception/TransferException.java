@@ -2,7 +2,7 @@ package com.example.wtow_transfer.exception;
 
 import java.util.UUID;
 
-class TransferException extends RuntimeException {
+public class TransferException extends RuntimeException {
     private final UUID transactionId;
     private final String sourceAccNumber;
     private final String destinationAccNumber;
