@@ -14,8 +14,15 @@ spring:
       jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       username: ${POSTGRES_ACCOUNT_MANAGER_USER}
       password: ${POSTGRES_ACCOUNT_MANAGER_PASSWORD}
+    transfer-engine:
+      jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      username: ${POSTGRES_TRANSFER_ENGINE_USER}
+      password: ${POSTGRES_TRANSFER_ENGINE_PASSWORD}
   jpa:
     open-in-view: false
     properties:
       hibernate:
         default_schema: core
+        jdbc:
+          batch_size: 10
+        order_updates: true
