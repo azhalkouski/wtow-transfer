@@ -24,9 +24,35 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Not found");
     }
 
+    @ExceptionHandler(AccountNumberNotFoundException.class)
+    public ProblemDetail handleAccountNumberNotFoundException(AccountNumberNotFoundException ex) {
+        this.logTransferException(ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Transfer failed");
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ProblemDetail handleInsufficientFundsException(InsufficientFundsException ex) {
+        this.logTransferException(ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.EXPECTATION_FAILED, "Insufficient funds");
+    }
+
+    @ExceptionHandler({SourceAccountIsBlockedException.class
+            , DestinationAccountIsBlockedException.class})
+    public ProblemDetail handleAccountIsBlockedException(TransferException ex) {
+        this.logTransferException(ex);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.EXPECTATION_FAILED, "One of accounts" +
+                " is blocked");
+    }
+
     @ExceptionHandler(NotAuthenticatedException.class)
     public ProblemDetail handleNotAuthenticatedException(NotAuthenticatedException ex) {
         logger.error(ex.getMessage());
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Not authenticated");
+    }
+
+    private void logTransferException(TransferException ex) {
+        logger.warn("EXCEPTION: {}. Source account Number: {}, destination account number: {}," +
+                        " transactionId: {}", ex.getMessage(), ex.getSourceAccNumber()
+                , ex.getDestinationAccNumber(), ex.getTransactionId());
     }
 }

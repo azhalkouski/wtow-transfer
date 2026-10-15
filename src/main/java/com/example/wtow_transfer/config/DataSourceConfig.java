@@ -23,4 +23,10 @@ public class DataSourceConfig {
     public DataSource accountManagerDataSource() {
         return DataSourceBuilder.create().build();
     }
+
+    @Bean
+    @ConfigurationProperties("spring.datasource.transfer-engine")
+    public DataSource transferEngineDataSource() {
+        return DataSourceBuilder.create().build();
+    }
 }
