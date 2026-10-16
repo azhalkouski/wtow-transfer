@@ -40,3 +40,7 @@ provisioning/db/.env
 
 
 notes/**
+
+### scripts ###
+scripts/.venv/
+scripts/.env
