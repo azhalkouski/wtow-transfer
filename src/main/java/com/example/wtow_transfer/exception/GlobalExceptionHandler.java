@@ -50,6 +50,12 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Not authenticated");
     }
 
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleUnexpected(Exception ex) {
+        logger.error("Unexpected {}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+        return ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private void logTransferException(TransferException ex) {
         logger.warn("EXCEPTION: {}. Source account Number: {}, destination account number: {}," +
                         " transactionId: {}", ex.getMessage(), ex.getSourceAccNumber()
