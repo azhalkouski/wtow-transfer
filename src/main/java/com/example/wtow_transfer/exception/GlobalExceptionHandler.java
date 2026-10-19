@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InsufficientFundsException.class)
     public ProblemDetail handleInsufficientFundsException(InsufficientFundsException ex) {
         this.logTransferException(ex);
-        return ProblemDetail.forStatusAndDetail(HttpStatus.EXPECTATION_FAILED, "Insufficient funds");
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, "Insufficient funds");
     }
 
     @ExceptionHandler({SourceAccountIsBlockedException.class
