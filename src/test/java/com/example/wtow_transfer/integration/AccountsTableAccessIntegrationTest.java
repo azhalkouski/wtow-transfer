@@ -219,7 +219,7 @@ public class AccountsTableAccessIntegrationTest extends TestContainersProvider {
                     INSERT INTO core.accounts (user_id, balance, currency_id, acc_number) VALUES
                 (
                     ?::uuid, 100000.00,
-                    (SELECT id FROM core.currencies WHERE code = 'EUR'), '0000000000000004'
+                    (SELECT id FROM core.currencies WHERE code = 'EUR'), '0000000000000005'
                 ) RETURNING user_id
                 """;
 

@@ -18,4 +18,8 @@ INSERT INTO core.accounts (user_id, balance, currency_id, acc_number) VALUES
 (
     (SELECT id FROM core.users WHERE email = 'alice_mystery@gmail.com'), 100000.00,
     (SELECT id FROM core.currencies WHERE code = 'USD'), '0000000000000003'
+),
+(
+    (SELECT id FROM core.users WHERE email = 'alice_mystery@gmail.com'), 100000.00,
+    (SELECT id FROM core.currencies WHERE code = 'JPY'), '0000000000000004'
 );
