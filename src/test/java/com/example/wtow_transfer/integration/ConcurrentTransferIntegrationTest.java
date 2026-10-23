@@ -21,6 +21,11 @@ import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * ConcurrentTransferIntegrationTest is currently working with USD accounts only.
+ * EXPLICITLY and EXCLUSIVELY
+ */
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
@@ -38,21 +43,21 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
     private final JdbcTemplate transferEngineJdbcTemplate;
     private RestTestClient restTestClient;
 
-    private final Map<String, BigDecimal> initialAccountBalances = new HashMap<>();
+    private final Map<String, BigDecimal> accountsUnderTestsInitialBalances = new HashMap<>();
 
     private static final BigDecimal TRANSFER_AMOUNT = new BigDecimal("100.00");
 
     private static final String BILL_EMAIL = "bill_turner@gmail.com";
     private static final String BILL_PASSWORD = "123";
-    private static final String BILL_ACC_NUMBER = "0000000000000001";
+    private static final String BILL_ACC_NUMBER_USD = "0000000000000001";
 
     private static final String JACK_EMAIL = "jack_spiral@gmail.com";
     private static final String JACK_PASSWORD = "123123";
-    private static final String JACK_ACC_NUMBER = "0000000000000002";
+    private static final String JACK_ACC_NUMBER_USD = "0000000000000002";
 
     private static final String ALICE_EMAIL = "alice_mystery@gmail.com";
     private static final String ALICE_PASSWORD = "123123123";
-    private static final String ALICE_ACC_NUMBER = "0000000000000003";
+    private static final String ALICE_ACC_NUMBER_USD = "0000000000000003";
 
     public ConcurrentTransferIntegrationTest(
             @Qualifier("transferEngineDataSource") DataSource transferEngineDataSource) {
@@ -60,16 +65,19 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
     }
 
     @BeforeAll
-    void captureInitialBalances() {
+    void captureInitialBalances_USD() {
         List<Map<String, Object>> rows = transferEngineJdbcTemplate.queryForList(
-                "SELECT acc_number, balance FROM core.accounts"
+                """
+                SELECT acc_number, balance FROM core.accounts
+                WHERE currency_id = (SELECT id FROM core.currencies WHERE code = 'USD')
+                """
         );
 
         for (Map<String, Object> accountBalanceRow : rows) {
             String accNumber = (String) accountBalanceRow.get("acc_number");
             // PostgreSQL numeric comes as BigDecimal
             BigDecimal balance = (BigDecimal) accountBalanceRow.get("balance");
-            initialAccountBalances.put(accNumber, balance);
+            accountsUnderTestsInitialBalances.put(accNumber, balance);
         }
     }
 
@@ -82,7 +90,7 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
 
     @BeforeEach
     void resetBalances() {
-        for (Map.Entry<String, BigDecimal> item : initialAccountBalances.entrySet()) {
+        for (Map.Entry<String, BigDecimal> item : accountsUnderTestsInitialBalances.entrySet()) {
             transferEngineJdbcTemplate.update(
                     "UPDATE core.accounts SET balance = ? WHERE acc_number = ?",
                     item.getValue(), item.getKey()
@@ -91,24 +99,27 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
     }
 
     @Test
-    void concurrentTransfersPreserveMoneyConservation() {
+    void concurrentTransfersPreserveMoneyConservation_USD() {
+        Set<String> accountNumbers = accountsUnderTestsInitialBalances.keySet();
+        String placeholders = String.join(",", Collections.nCopies(accountNumbers.size(), "?"));
         BigDecimal totalBefore = transferEngineJdbcTemplate.queryForObject(
-                "SELECT SUM(balance) FROM core.accounts",
-                BigDecimal.class
+                "SELECT SUM(balance) FROM core.accounts WHERE acc_number IN (" + placeholders + ")",
+                BigDecimal.class,
+                accountNumbers.toArray()
         );
 
         String billSessionId = login(BILL_EMAIL, BILL_PASSWORD);
         String jackSessionId = login(JACK_EMAIL, JACK_PASSWORD);
         String aliceSessionId = login(ALICE_EMAIL, ALICE_PASSWORD);
 
-        Map<String, String> billToJackTransferBody = buildImmediateTransferBody(BILL_ACC_NUMBER,
-                JACK_ACC_NUMBER, TRANSFER_AMOUNT, "Jack");
-        Map<String, String> jackToBillTransferBody = buildImmediateTransferBody(JACK_ACC_NUMBER,
-                BILL_ACC_NUMBER, TRANSFER_AMOUNT, "Bill");
-        Map<String, String> aliceToBillTransferBody = buildImmediateTransferBody(ALICE_ACC_NUMBER,
-                BILL_ACC_NUMBER, TRANSFER_AMOUNT, "Bill");
-        Map<String, String> aliceToJackTransferBody = buildImmediateTransferBody(ALICE_ACC_NUMBER,
-                JACK_ACC_NUMBER, TRANSFER_AMOUNT, "Jack");
+        Map<String, String> billToJackTransferBody = buildImmediateTransferBody(BILL_ACC_NUMBER_USD,
+                JACK_ACC_NUMBER_USD, TRANSFER_AMOUNT, "Jack");
+        Map<String, String> jackToBillTransferBody = buildImmediateTransferBody(JACK_ACC_NUMBER_USD,
+                BILL_ACC_NUMBER_USD, TRANSFER_AMOUNT, "Bill");
+        Map<String, String> aliceToBillTransferBody = buildImmediateTransferBody(ALICE_ACC_NUMBER_USD,
+                BILL_ACC_NUMBER_USD, TRANSFER_AMOUNT, "Bill");
+        Map<String, String> aliceToJackTransferBody = buildImmediateTransferBody(ALICE_ACC_NUMBER_USD,
+                JACK_ACC_NUMBER_USD, TRANSFER_AMOUNT, "Jack");
 
         try (ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE)) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -127,11 +138,11 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
         }
 
         BigDecimal billBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, BILL_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, BILL_ACC_NUMBER_USD);
         BigDecimal jackBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, JACK_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, JACK_ACC_NUMBER_USD);
         BigDecimal aliceBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, ALICE_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, ALICE_ACC_NUMBER_USD);
 
         assertThat(billBalance).isEqualByComparingTo(BigDecimal.valueOf(150000.00));
         assertThat(jackBalance).isEqualByComparingTo(BigDecimal.valueOf(150000.00));
@@ -144,11 +155,11 @@ public class ConcurrentTransferIntegrationTest extends TestContainersProvider {
     @Test
     void balancesAreResetBeforeEachTest() {
         BigDecimal billBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, BILL_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, BILL_ACC_NUMBER_USD);
         BigDecimal jackBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, JACK_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, JACK_ACC_NUMBER_USD);
         BigDecimal aliceBalance = transferEngineJdbcTemplate.queryForObject(
-                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, ALICE_ACC_NUMBER);
+                SELECT_BALANCE_BY_ACC_NUMBER, BigDecimal.class, ALICE_ACC_NUMBER_USD);
 
         assertThat(billBalance).isEqualByComparingTo(BigDecimal.valueOf(100000.00));
         assertThat(jackBalance).isEqualByComparingTo(BigDecimal.valueOf(100000.00));

@@ -23,8 +23,24 @@ public class DatabaseSetupIntegrationTest extends TestContainersProvider {
         String currentRole = jdbcTemplate.queryForObject("SELECT current_role", String.class);
         assertThat(currentRole).isEqualTo("wtow_transfer_ngn");
 
-        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM core.accounts"
+        Integer totalAccountsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM core.accounts"
                 , Integer.class);
-        assertThat(count).isEqualTo(3);
+        Integer usdAccountsCount = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*) FROM core.accounts
+                WHERE currency_id = (SELECT id FROM core.currencies WHERE code = 'USD')
+                """,
+                Integer.class);
+        Integer jpyAccountsCount = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*) FROM core.accounts
+                WHERE currency_id = (SELECT id FROM core.currencies WHERE code = 'JPY')
+                """,
+                Integer.class);
+
+        assertThat(totalAccountsCount).isEqualTo(4);
+        assertThat(usdAccountsCount).isEqualTo(3);
+        assertThat(jpyAccountsCount).isEqualTo(1);
+        assertThat(jpyAccountsCount + usdAccountsCount).isEqualTo(totalAccountsCount);
     }
 }
